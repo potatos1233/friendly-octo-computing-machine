@@ -143,16 +143,7 @@
             </form>
         </div>
 
-        <div class="box">
-            <h3>🎯 Vulnerability Hints for LO:</h3>
-            <ul style="margin-left: 20px; color: #94a3b8;">
-                <li><code>index.html?user=&lt;script&gt;document.body.innerHTML='&lt;h1&gt;OWNED&lt;/h1&gt;'&lt;/script&gt;</code></li>
-                <li><code>index.html?user=&lt;img src=x onerror=alert(document.cookie)&gt;</code></li>
-                <li>Open DevTools (F12) -> Console: <code>localStorage.setItem('announcement', '&lt;h1 style="color:red"&gt;HACKED&lt;/h1&gt;')</code></li>
-                <li>Then reload the page — the announcement persists forever</li>
-            </ul>
-        </div>
-    </div>
+        
 
     <div class="footer">
         <p>Midnight Archives &copy; 1998-2009 | Composed in Notepad</p>
