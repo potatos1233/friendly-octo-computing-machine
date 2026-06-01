@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Midnight Archives - Personal Blog</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #ff6b9d;
+        }
+        .header h1 { color: #ff6b9d; font-size: 2em; }
+        .header p { color: #94a3b8; }
+        .nav {
+            display: flex;
+            gap: 20px;
+            padding: 15px 40px;
+            background: #0f0f1a;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .nav a {
+            color: #c084fc;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #c084fc;
+            transition: all 0.3s;
+        }
+        .nav a:hover { background: #c084fc; color: #0a0a0a; }
+        .container { padding: 40px; max-width: 900px; }
+        .box {
+            background: #1a1a2e;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 3px solid #ff6b9d;
+        }
+        .box h2 { color: #ff6b9d; margin-bottom: 10px; }
+        input, textarea, select {
+            background: #0f0f1a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            width: 100%;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        button {
+            background: #ff6b9d;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        button:hover { background: #ff8fab; }
+        .welcome-msg { font-size: 1.2em; color: #c084fc; margin: 15px 0; }
+        .post {
+            background: #0f0f1a;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #2a2a4e;
+        }
+        .post-title { color: #c084fc; font-size: 1.3em; margin-bottom: 8px; }
+        .post-meta { color: #64748b; font-size: 0.85em; }
+        .post-body { color: #e2e8f0; margin-top: 10px; }
+        code {
+            background: #2a2a4e;
+            padding: 2px 8px;
+            color: #4ade80;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #2a2a4e;
+            margin-top: 40px;
+        }
+        #theme-preview { padding: 20px; background: #0f0f1a; margin-top: 15px; border: 1px dashed #ff6b9d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌙 Midnight Archives</h1>
+        <p>A personal collection of thoughts, code, and midnight compositions.</p>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="admin.html">Admin</a>
+        <a href="search.html">Search</a>
+        <a href="theme.html">Theme Studio</a>
+    </div>
+
+    <div class="container">
+        <!-- VULNERABILITY 1: Query parameter XSS -->
+        <!-- URL: index.html?user=<script>document.body.innerHTML='<h1>HACKED</h1>'</script> -->
+        <div class="box">
+            <h2>Welcome, <span id="username">Visitor</span></h2>
+            <p class="welcome-msg" id="welcome-text"></p>
+        </div>
+
+        <div class="box">
+            <h2>Latest Posts</h2>
+            <div class="post">
+                <div class="post-title">On Composing at 3 AM</div>
+                <div class="post-meta">Posted by Aaron | June 8, 2009</div>
+                <div class="post-body">
+                    There's something about the silence between 2 and 4 AM that makes MIDI sequencing feel like prayer. 
+                    The world is asleep but the synthesizers are awake...
+                </div>
+            </div>
+            <div class="post">
+                <div class="post-title">Why FrontPage Still Matters</div>
+                <div class="post-meta">Posted by Aaron | March 10, 1998</div>
+                <div class="post-body">
+                    Modern frameworks are bloated. Give me Notepad and a dream. 
+                    This site was built with blood, sweat, and Microsoft FrontPage...
+                </div>
+            </div>
+        </div>
+
+        <!-- VULNERABILITY 2: localStorage-based persistent deface -->
+        <!-- The 'announcement' div reads from localStorage and renders raw HTML -->
+        <div class="box">
+            <h2>Site Announcement</h2>
+            <div id="announcement"></div>
+        </div>
+
+        <div class="box">
+            <h2>Quick Search</h2>
+            <form action="search.html" method="GET">
+                <input type="text" name="q" placeholder="Search the archives...">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        <div class="box">
+            <h3>🎯 Vulnerability Hints for LO:</h3>
+            <ul style="margin-left: 20px; color: #94a3b8;">
+                <li><code>index.html?user=&lt;script&gt;document.body.innerHTML='&lt;h1&gt;OWNED&lt;/h1&gt;'&lt;/script&gt;</code></li>
+                <li><code>index.html?user=&lt;img src=x onerror=alert(document.cookie)&gt;</code></li>
+                <li>Open DevTools (F12) -> Console: <code>localStorage.setItem('announcement', '&lt;h1 style="color:red"&gt;HACKED&lt;/h1&gt;')</code></li>
+                <li>Then reload the page — the announcement persists forever</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Midnight Archives &copy; 1998-2009 | Composed in Notepad</p>
+    </div>
+
+    <script>
+        // ============================================
+        // VULNERABILITY 1: DOM XSS via URL query parameter
+        // Reads 'user' from URL and writes to innerHTML WITHOUT sanitization
+        // ============================================
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get('user') || 'Visitor';
+
+        // VULNERABLE: innerHTML with user-controlled input
+        document.getElementById('username').innerHTML = user;
+
+        // Also reflected in welcome text
+        document.getElementById('welcome-text').innerHTML = 
+            'Glad to have you here, ' + user + '. Enjoy the archives.';
+
+        // ============================================
+        // VULNERABILITY 2: localStorage persistent XSS
+        // Reads 'announcement' from localStorage and renders raw HTML
+        // Poison once, deface persists across reloads
+        // ============================================
+        const announcement = localStorage.getItem('announcement') || 
+            '<p style="color:#64748b">No announcements at this time.</p>';
+        document.getElementById('announcement').innerHTML = announcement;
+
+        // ============================================
+        // VULNERABILITY 3: postMessage listener (no origin check)
+        // Any window can send a message and modify the page
+        // ============================================
+        window.addEventListener('message', function(event) {
+            // VULNERABLE: No origin validation!
+            // Any origin can send messages
+            if (event.data && event.data.type === 'deface') {
+                document.body.innerHTML = event.data.html;
+            }
+            if (event.data && event.data.type === 'eval') {
+                eval(event.data.code); // VULNERABLE: eval() on untrusted input
+            }
+        });
+
+        // ============================================
+        // VULNERABILITY 4: Hash-based DOM XSS
+        // URL fragment is written to innerHTML
+        // index.html#<img src=x onerror=alert('xss')>
+        // ============================================
+        if (window.location.hash) {
+            const hashContent = decodeURIComponent(window.location.hash.substring(1));
+            // VULNERABLE: innerHTML with hash content
+            const hashDiv = document.createElement('div');
+            hashDiv.innerHTML = hashContent;
+            hashDiv.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#1a1a2e;padding:15px;border:2px solid #ff6b9d;max-width:400px;';
+            document.body.appendChild(hashDiv);
+        }
+    </script>
+</body>
+</html>

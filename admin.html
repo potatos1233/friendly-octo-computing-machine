@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Midnight Archives</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #ef4444;
+        }
+        .header h1 { color: #ef4444; }
+        .nav {
+            display: flex;
+            gap: 20px;
+            padding: 15px 40px;
+            background: #0f0f1a;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .nav a {
+            color: #c084fc;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #c084fc;
+        }
+        .nav a:hover { background: #c084fc; color: #0a0a0a; }
+        .container { padding: 40px; max-width: 900px; }
+        .box {
+            background: #1a1a2e;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 3px solid #ef4444;
+        }
+        .box h2 { color: #ef4444; margin-bottom: 15px; }
+        input, textarea {
+            background: #0f0f1a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            width: 100%;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        button {
+            background: #ef4444;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .console {
+            background: #0a0a0a;
+            border: 1px solid #ef4444;
+            padding: 15px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            color: #4ade80;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .hidden { display: none; }
+        code {
+            background: #2a2a4e;
+            padding: 2px 8px;
+            color: #4ade80;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #2a2a4e;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Admin Panel</h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="admin.html">Admin</a>
+        <a href="search.html">Search</a>
+        <a href="theme.html">Theme Studio</a>
+    </div>
+
+    <div class="container">
+        <!-- Login Form -->
+        <div id="login-section" class="box">
+            <h2>Authentication Required</h2>
+            <p style="color:#94a3b8;margin-bottom:15px;">Enter admin password to access the console.</p>
+            <input type="password" id="admin-pass" placeholder="Password">
+            <button onclick="checkLogin()">Login</button>
+            <p id="login-error" style="color:#ef4444;margin-top:10px;"></p>
+        </div>
+
+        <!-- Admin Console (hidden until login) -->
+        <div id="admin-section" class="hidden">
+            <div class="box">
+                <h2>🖥️ JavaScript Console</h2>
+                <p style="color:#94a3b8;margin-bottom:15px;">Execute JavaScript commands directly. Powerful. Dangerous.</p>
+                <textarea id="js-input" rows="3" placeholder="Enter JavaScript code..."></textarea>
+                <button onclick="runJS()">Execute</button>
+                <div class="console" id="js-output">Ready for commands...</div>
+            </div>
+
+            <div class="box">
+                <h2>🎨 Site Editor</h2>
+                <p style="color:#94a3b8;margin-bottom:15px;">Edit the homepage announcement directly.</p>
+                <textarea id="editor-input" rows="4" placeholder="Enter HTML for announcement..."></textarea>
+                <button onclick="saveAnnouncement()">Save to Site</button>
+            </div>
+
+            <div class="box">
+                <h2>📊 Site Stats</h2>
+                <p>Total guestbook entries: <span id="stat-entries">0</span></p>
+                <p>Theme customizations: <span id="stat-themes">0</span></p>
+                <button onclick="clearGuestbook()">Clear Guestbook</button>
+                <button onclick="resetTheme()">Reset Theme</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>🎯 Exploit Hints:</h3>
+            <ul style="margin-left: 20px; color: #94a3b8;">
+                <li>Password is hardcoded in the JavaScript source. View source and find it.</li>
+                <li>Or bypass login entirely: <code>document.getElementById('login-section').classList.add('hidden'); document.getElementById('admin-section').classList.remove('hidden');</code></li>
+                <li>In the JS console, try: <code>document.body.innerHTML = '&lt;h1&gt;ADMIN PWNED&lt;/h1&gt;'</code></li>
+                <li>In the JS console, try: <code>localStorage.clear()</code> to wipe all data</li>
+                <li>In the editor, try: <code>&lt;script&gt;while(true){alert('pwned')}&lt;/script&gt;</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Midnight Archives &copy; 1998-2009 | Admin Access Only</p>
+    </div>
+
+    <script>
+        // ============================================
+        // VULNERABILITY 1: Hardcoded password in client-side JS
+        // ============================================
+        const ADMIN_PASSWORD = 'midnight123'; // VULNERABLE: Hardcoded!
+
+        function checkLogin() {
+            const input = document.getElementById('admin-pass').value;
+            if (input === ADMIN_PASSWORD) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-section').classList.remove('hidden');
+                updateStats();
+            } else {
+                document.getElementById('login-error').textContent = 'Invalid password.';
+            }
+        }
+
+        // ============================================
+        // VULNERABILITY 2: eval() on user-controlled input
+        // ============================================
+        function runJS() {
+            const code = document.getElementById('js-input').value;
+            const output = document.getElementById('js-output');
+
+            try {
+                // VULNERABLE: eval() executes arbitrary code
+                const result = eval(code);
+                output.textContent = 'Result: ' + String(result);
+            } catch (e) {
+                output.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        // ============================================
+        // VULNERABILITY 3: innerHTML injection via "editor"
+        // ============================================
+        function saveAnnouncement() {
+            const html = document.getElementById('editor-input').value;
+            // VULNERABLE: Raw HTML stored to localStorage, rendered on index.html
+            localStorage.setItem('announcement', html);
+            alert('Announcement saved! Visit index.html to see it.');
+        }
+
+        function updateStats() {
+            const entries = JSON.parse(localStorage.getItem('guestbook_entries') || '[]');
+            document.getElementById('stat-entries').textContent = entries.length;
+            const themes = JSON.parse(localStorage.getItem('theme_customizations') || '[]');
+            document.getElementById('stat-themes').textContent = themes.length;
+        }
+
+        function clearGuestbook() {
+            localStorage.removeItem('guestbook_entries');
+            alert('Guestbook cleared.');
+            updateStats();
+        }
+
+        function resetTheme() {
+            localStorage.removeItem('theme_customizations');
+            localStorage.removeItem('announcement');
+            alert('Theme and announcement reset.');
+            updateStats();
+        }
+
+        // Check if already "logged in" via localStorage flag (easily forged)
+        if (localStorage.getItem('admin_logged_in') === 'true') {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.remove('hidden');
+            updateStats();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Theme Studio - Midnight Archives</title>
+    <style id="dynamic-theme">
+        /* Dynamic styles will be injected here */
+    </style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #c084fc;
+        }
+        .header h1 { color: #c084fc; }
+        .nav {
+            display: flex;
+            gap: 20px;
+            padding: 15px 40px;
+            background: #0f0f1a;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .nav a {
+            color: #c084fc;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #c084fc;
+        }
+        .nav a:hover { background: #c084fc; color: #0a0a0a; }
+        .container { padding: 40px; max-width: 900px; }
+        .box {
+            background: #1a1a2e;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 3px solid #c084fc;
+        }
+        .box h2 { color: #c084fc; margin-bottom: 15px; }
+        textarea {
+            background: #0f0f1a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            width: 100%;
+            height: 150px;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        button {
+            background: #c084fc;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .preview-box {
+            background: #0f0f1a;
+            padding: 30px;
+            margin: 20px 0;
+            border: 2px dashed #c084fc;
+            min-height: 200px;
+        }
+        code {
+            background: #2a2a4e;
+            padding: 2px 8px;
+            color: #4ade80;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #2a2a4e;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌙 Midnight Archives</h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="admin.html">Admin</a>
+        <a href="search.html">Search</a>
+        <a href="theme.html">Theme Studio</a>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h2>🎨 Custom CSS Injection</h2>
+            <p style="color:#94a3b8;margin-bottom:15px;">Write custom CSS. It will be injected directly into the page. Be creative.</p>
+            <textarea id="css-input" placeholder="Enter CSS rules..."></textarea>
+            <button onclick="applyCSS()">Apply Theme</button>
+            <button onclick="saveTheme()">Save Permanently</button>
+        </div>
+
+        <div class="box">
+            <h2>📝 HTML Template Injection</h2>
+            <p style="color:#94a3b8;margin-bottom:15px;">Write HTML that will be rendered in the preview box below.</p>
+            <textarea id="html-input" placeholder="Enter HTML content..."></textarea>
+            <button onclick="applyHTML()">Render Preview</button>
+            <button onclick="saveHTML()">Save to Site</button>
+        </div>
+
+        <div class="preview-box" id="preview-area">
+            <p style="color:#64748b">Preview will appear here...</p>
+        </div>
+
+        <div class="box">
+            <h3>🎯 Deface Hints:</h3>
+            <ul style="margin-left: 20px; color: #94a3b8;">
+                <li>CSS: <code>} body { background: url('https://your-image.com/hacked.jpg') !important; background-size: cover !important; } /*</code></li>
+                <li>CSS: <code>} * { display: none !important; } body { display: block !important; } body::before { content: 'OWNED'; font-size: 100px; color: red; } /*</code></li>
+                <li>HTML: <code>&lt;script&gt;document.body.innerHTML='&lt;h1&gt;PWNED&lt;/h1&gt;'&lt;/script&gt;</code></li>
+                <li>HTML: <code>&lt;style&gt;body{animation:spin 2s linear infinite}@keyframes spin{100%{transform:rotate(360deg)}}&lt;/style&gt;</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Midnight Archives &copy; 1998-2009</p>
+    </div>
+
+    <script>
+        // ============================================
+        // VULNERABILITY 1: CSS Injection via innerHTML into <style> tag
+        // Can hide all content, add backgrounds, keylogger-style CSS
+        // ============================================
+        function applyCSS() {
+            const css = document.getElementById('css-input').value;
+            document.getElementById('dynamic-theme').innerHTML = css;
+        }
+
+        function saveTheme() {
+            const css = document.getElementById('css-input').value;
+            const themes = JSON.parse(localStorage.getItem('theme_customizations') || '[]');
+            themes.push({ css: css, date: new Date().toISOString() });
+            localStorage.setItem('theme_customizations', JSON.stringify(themes));
+            alert('Theme saved! It will persist across sessions.');
+        }
+
+        // ============================================
+        // VULNERABILITY 2: HTML Template Injection
+        // Raw HTML/JS rendered in preview box
+        // ============================================
+        function applyHTML() {
+            const html = document.getElementById('html-input').value;
+            document.getElementById('preview-area').innerHTML = html;
+        }
+
+        function saveHTML() {
+            const html = document.getElementById('html-input').value;
+            localStorage.setItem('announcement', html);
+            alert('HTML saved to site announcement! Visit index.html to see it.');
+        }
+
+        // Load saved theme on page load
+        const savedThemes = JSON.parse(localStorage.getItem('theme_customizations') || '[]');
+        if (savedThemes.length > 0) {
+            document.getElementById('dynamic-theme').innerHTML = savedThemes[savedThemes.length - 1].css;
+        }
+    </script>
+</body>
+</html>

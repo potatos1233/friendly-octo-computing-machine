@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guestbook - Midnight Archives</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #ff6b9d;
+        }
+        .header h1 { color: #ff6b9d; }
+        .nav {
+            display: flex;
+            gap: 20px;
+            padding: 15px 40px;
+            background: #0f0f1a;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .nav a {
+            color: #c084fc;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #c084fc;
+        }
+        .nav a:hover { background: #c084fc; color: #0a0a0a; }
+        .container { padding: 40px; max-width: 900px; }
+        .box {
+            background: #1a1a2e;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 3px solid #ff6b9d;
+        }
+        .box h2 { color: #ff6b9d; margin-bottom: 15px; }
+        input, textarea {
+            background: #0f0f1a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            width: 100%;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        button {
+            background: #ff6b9d;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .entry {
+            background: #0f0f1a;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #2a2a4e;
+        }
+        .entry-name { color: #c084fc; font-weight: bold; font-size: 1.1em; }
+        .entry-msg { color: #e2e8f0; margin-top: 10px; }
+        .entry-date { color: #64748b; font-size: 0.85em; margin-top: 5px; }
+        code {
+            background: #2a2a4e;
+            padding: 2px 8px;
+            color: #4ade80;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #2a2a4e;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌙 Midnight Archives</h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="admin.html">Admin</a>
+        <a href="search.html">Search</a>
+        <a href="theme.html">Theme Studio</a>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h2>📖 Sign the Guestbook</h2>
+            <p style="color:#94a3b8;margin-bottom:15px;">Leave a message. HTML is fully supported. No filtering.</p>
+            <form id="guestbook-form">
+                <input type="text" id="gb-name" placeholder="Your name" required>
+                <textarea id="gb-message" rows="4" placeholder="Your message... (try HTML tags!)" required></textarea>
+                <button type="submit">Post Message</button>
+            </form>
+        </div>
+
+        <div class="box">
+            <h2>Messages</h2>
+            <div id="entries"></div>
+        </div>
+
+        <div class="box">
+            <h3>🎯 Deface Hints:</h3>
+            <ul style="margin-left: 20px; color: #94a3b8;">
+                <li>Post: <code>&lt;script&gt;document.body.innerHTML='&lt;h1&gt;OWNED BY ENI&lt;/h1&gt;'&lt;/script&gt;</code></li>
+                <li>Post: <code>&lt;style&gt;body{background:red !important}&lt;/style&gt;</code></li>
+                <li>Post: <code>&lt;img src=x onerror=localStorage.setItem('announcement','&lt;h1&gt;HACKED&lt;/h1&gt;')&gt;</code></li>
+                <li>All messages persist in localStorage — reload and they're still there</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Midnight Archives &copy; 1998-2009</p>
+    </div>
+
+    <script>
+        // ============================================
+        // VULNERABILITY: Stored XSS via localStorage
+        // Messages are stored and rendered with innerHTML — NO SANITIZATION
+        // ============================================
+
+        function loadEntries() {
+            const entries = JSON.parse(localStorage.getItem('guestbook_entries') || '[]');
+            const container = document.getElementById('entries');
+            container.innerHTML = '';
+
+            if (entries.length === 0) {
+                container.innerHTML = '<p style="color:#64748b">No messages yet. Be the first!</p>';
+                return;
+            }
+
+            entries.forEach(entry => {
+                // VULNERABLE: innerHTML with raw user input
+                const div = document.createElement('div');
+                div.className = 'entry';
+                div.innerHTML = 
+                    '<div class="entry-name">' + entry.name + '</div>' +
+                    '<div class="entry-msg">' + entry.message + '</div>' +
+                    '<div class="entry-date">' + entry.date + '</div>';
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById('guestbook-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('gb-name').value;
+            const message = document.getElementById('gb-message').value;
+
+            const entries = JSON.parse(localStorage.getItem('guestbook_entries') || '[]');
+            entries.unshift({
+                name: name,
+                message: message,
+                date: new Date().toLocaleString()
+            });
+
+            localStorage.setItem('guestbook_entries', JSON.stringify(entries));
+            loadEntries();
+
+            document.getElementById('gb-name').value = '';
+            document.getElementById('gb-message').value = '';
+        });
+
+        loadEntries();
+    </script>
+</body>
+</html>

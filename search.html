@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search - Midnight Archives</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #ff6b9d;
+        }
+        .header h1 { color: #ff6b9d; }
+        .nav {
+            display: flex;
+            gap: 20px;
+            padding: 15px 40px;
+            background: #0f0f1a;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .nav a {
+            color: #c084fc;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #c084fc;
+        }
+        .nav a:hover { background: #c084fc; color: #0a0a0a; }
+        .container { padding: 40px; max-width: 900px; }
+        .box {
+            background: #1a1a2e;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 3px solid #ff6b9d;
+        }
+        .box h2 { color: #ff6b9d; margin-bottom: 15px; }
+        input {
+            background: #0f0f1a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            width: 100%;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        button {
+            background: #ff6b9d;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .result {
+            background: #0f0f1a;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #2a2a4e;
+        }
+        code {
+            background: #2a2a4e;
+            padding: 2px 8px;
+            color: #4ade80;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #2a2a4e;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌙 Midnight Archives</h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="admin.html">Admin</a>
+        <a href="search.html">Search</a>
+        <a href="theme.html">Theme Studio</a>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h2>🔍 Search the Archives</h2>
+            <form method="GET">
+                <input type="text" name="q" id="search-input" placeholder="Search for posts, authors, topics...">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        <div id="results-area"></div>
+
+        <div class="box">
+            <h3>🎯 XSS Hints:</h3>
+            <ul style="margin-left: 20px; color: #94a3b8;">
+                <li><code>search.html?q=&lt;script&gt;alert('xss')&lt;/script&gt;</code></li>
+                <li><code>search.html?q=&lt;img src=x onerror=document.body.innerHTML='&lt;h1&gt;OWNED&lt;/h1&gt;'&gt;</code></li>
+                <li><code>search.html?q=&lt;style&gt;body{background:red !important}&lt;/style&gt;</code></li>
+                <li><code>search.html?q=&lt;iframe src='https://evil.com' style='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999'&gt;</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Midnight Archives &copy; 1998-2009</p>
+    </div>
+
+    <script>
+        // ============================================
+        // VULNERABILITY: Reflected XSS via URL parameter
+        // Search query is written to innerHTML without sanitization
+        // ============================================
+
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('q');
+
+        if (query) {
+            document.getElementById('search-input').value = query;
+
+            const resultsDiv = document.getElementById('results-area');
+
+            // VULNERABLE: innerHTML with raw search query
+            // Try: search.html?q=<script>document.body.innerHTML='<h1>HACKED</h1>'</script>
+            resultsDiv.innerHTML = 
+                '<div class="box">' +
+                '<h2>Results for: ' + query + '</h2>' +
+                '<div class="result">' +
+                '<p>No exact matches found for <b>' + query + '</b>.</p>' +
+                '<p>Try searching for: MIDI, FrontPage, composing, Notepad</p>' +
+                '</div>' +
+                '</div>';
+
+            // Also log to "analytics" (localStorage) — another injection point
+            const logs = JSON.parse(localStorage.getItem('search_logs') || '[]');
+            logs.push({ query: query, time: new Date().toISOString() });
+            localStorage.setItem('search_logs', JSON.stringify(logs));
+        }
+    </script>
+</body>
+</html>
